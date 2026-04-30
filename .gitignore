@@ -1,0 +1,10 @@
+node_modules/
+.venv/
+dist/
+build/
+.env
+*.log
+__pycache__/
+*.pyc
+.DS_Store
+implementation_plan.md.resolved
