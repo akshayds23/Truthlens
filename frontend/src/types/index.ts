@@ -80,4 +80,3 @@ export interface ClaimSubmissionForm {
   llmProvider: 'openai' | 'gemini' | 'anthropic' | 'groq' | 'local';
   apiKey?: string;
 }
-
