@@ -331,4 +331,3 @@ def get_vector_store(store_type: str = "chroma", **kwargs) -> VectorStore:
         return PgVectorStore(**kwargs)
     else:
         raise ValueError(f"Unknown vector store type: {store_type}")
-
