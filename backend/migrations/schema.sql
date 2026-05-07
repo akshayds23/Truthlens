@@ -153,3 +153,4 @@ COMMENT ON TABLE feedback IS 'User feedback on verdict accuracy';
 COMMENT ON COLUMN claims.deleted_at IS 'Soft delete timestamp for audit trail';
 COMMENT ON COLUMN evidence_chunks.embedding IS 'Vector embedding (384 dimensions for all-MiniLM-L6-v2)';
 COMMENT ON COLUMN reports.full_report_json IS 'Denormalized full report as JSONB for easy querying';
+
