@@ -47,4 +47,3 @@ services:
 networks:
   truthlens-network:
     driver: bridge
-
