@@ -372,3 +372,4 @@ def get_verdict_generator() -> VerdictGenerator:
     if _verdict_generator is None:
         _verdict_generator = VerdictGenerator()
     return _verdict_generator
+
