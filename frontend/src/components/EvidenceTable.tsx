@@ -57,3 +57,4 @@ export function EvidenceTable({ evidences, title, bgColor }: EvidenceTableProps)
     </div>
   );
 }
+
