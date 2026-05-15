@@ -59,4 +59,3 @@ const getEnvironment = (): Environment => {
 export const env = getEnvironment();
 
 logger.info('Environment loaded', { env: env.NODE_ENV, port: env.PORT });
-
