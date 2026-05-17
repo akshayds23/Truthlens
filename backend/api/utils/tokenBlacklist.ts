@@ -40,4 +40,3 @@ export const tokenBlacklist = {
     return blacklist.size;
   },
 };
-
