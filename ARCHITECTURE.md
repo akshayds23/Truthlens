@@ -626,4 +626,3 @@ This architecture provides:
 ✅ **Real-time UX** — WebSocket progress updates
 ✅ **Flexible LLMs** — User brings their own key or uses local models
 ✅ **Evidence-Backed** — All verdicts cited and traceable
-
