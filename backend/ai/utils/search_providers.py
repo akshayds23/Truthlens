@@ -557,3 +557,4 @@ class ProviderPool:
 
         # Sort by relevance (descending)
         return sorted(results, key=lambda r: r.relevance, reverse=True)
+
