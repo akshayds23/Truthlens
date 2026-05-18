@@ -196,4 +196,3 @@ export const claimsStore = {
     return result.rows as StoredClaim[];
   },
 };
-
