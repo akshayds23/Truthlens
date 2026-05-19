@@ -47,4 +47,3 @@ export interface Provider {
 }
 
 // TODO: Implement actual model definitions with Prisma or TypeORM
-
