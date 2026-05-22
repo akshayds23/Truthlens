@@ -172,3 +172,4 @@ class ProviderPool:
 
 with open('ai/utils/search_providers.py', 'w') as f:
     f.write(content_to_keep + rest)
+
