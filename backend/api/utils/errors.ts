@@ -27,4 +27,3 @@ export const errorMessages = {
   INVALID_TOKEN: 'Invalid token',
   MISSING_TOKEN: 'No token provided',
 };
-
