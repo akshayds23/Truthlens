@@ -39,3 +39,4 @@ export const closeDatabase = async (): Promise<void> => {
     logger.error('Error closing database connection', error);
   }
 };
+
