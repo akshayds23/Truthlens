@@ -219,4 +219,3 @@ export const copyToClipboard = async (report: FactCheckReport, format: 'markdown
     return false;
   }
 };
-
