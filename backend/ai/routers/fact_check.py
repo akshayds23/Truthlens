@@ -610,4 +610,3 @@ async def cache_claim_embedding(request: dict):
     except Exception as e:
         logger.error(f"Cache embedding failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to cache embedding")
-
