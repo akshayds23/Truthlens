@@ -63,4 +63,3 @@ Read-Host "Press ENTER to stop all services"
 Write-Host "Stopping services..." -ForegroundColor Red
 Get-Process cmd | Where-Object { $_.Id -eq $expressProcess.Id -or $_.Id -eq $fastApiProcess.Id -or $_.Id -eq $frontendProcess.Id } | Stop-Process -Force
 Write-Host "All services stopped." -ForegroundColor Green
-
