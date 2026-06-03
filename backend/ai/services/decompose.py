@@ -217,4 +217,3 @@ class DecompositionService:
             )
 
         return processed
-
