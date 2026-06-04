@@ -7,3 +7,4 @@ EXPRESS_PID=$!
 uvicorn ai.main:app --host 0.0.0.0 --port 8000 &
 FASTAPI_PID=$!
 wait $EXPRESS_PID $FASTAPI_PID
+
