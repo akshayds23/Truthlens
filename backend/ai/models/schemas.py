@@ -539,4 +539,3 @@ class GenerateVerdictRequest(BaseModel):
                 "api_key": "sk-..."
             }
         }
-
