@@ -385,4 +385,3 @@ def get_retriever(embedding_model: Optional[str] = None) -> EvidenceRetriever:
     if _retriever is None:
         _retriever = EvidenceRetriever(embedding_model)
     return _retriever
-
