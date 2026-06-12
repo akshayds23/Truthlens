@@ -371,4 +371,3 @@ export const claimsService = {
     return await claimsStore.searchClaims(searchQuery);
   },
 };
-
