@@ -583,4 +583,3 @@ def get_orchestrator() -> FactCheckOrchestrator:
     if _orchestrator is None:
         _orchestrator = FactCheckOrchestrator()
     return _orchestrator
-
