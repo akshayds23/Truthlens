@@ -52,4 +52,3 @@ export function ResultCard({ report }: ResultCardProps) {
     </div>
   );
 }
-
