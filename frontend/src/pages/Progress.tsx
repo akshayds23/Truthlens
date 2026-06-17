@@ -320,4 +320,3 @@ export default function Progress() {
     </div>
   );
 }
-
