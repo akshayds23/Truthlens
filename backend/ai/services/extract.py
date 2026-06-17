@@ -522,4 +522,3 @@ def get_extractor() -> ContentExtractor:
     if _extractor is None:
         _extractor = ContentExtractor()
     return _extractor
-
