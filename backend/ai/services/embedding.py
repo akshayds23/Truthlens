@@ -356,3 +356,4 @@ def get_embedding_pipeline(embedding_model: Optional[str] = None) -> EmbeddingPi
         model = embedding_model or settings.EMBEDDING_MODEL or DEFAULT_EMBEDDING_MODEL
         _pipeline = EmbeddingPipeline(embedding_model=model)
     return _pipeline
+
