@@ -237,3 +237,4 @@ VITE_API_URL=http://backend:5000    # Inside Docker network
 5. Integrate PostgreSQL + pgvector
 6. Dockerize all components
 7. Deploy to local Docker first, then AWS
+
