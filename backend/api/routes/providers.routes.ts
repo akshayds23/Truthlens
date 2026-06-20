@@ -25,4 +25,3 @@ router.patch('/:id', providersController.updateProvider);
 router.delete('/:id', providersController.deleteProvider);
 
 export default router;
-

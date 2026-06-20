@@ -428,3 +428,4 @@ Phase 5 (SEO + Deploy)            ← Makes it live
 2. Test share URL → verify it loads without login
 3. Screenshot for LinkedIn post preview
 4. Mobile viewport test
+

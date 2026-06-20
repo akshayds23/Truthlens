@@ -151,4 +151,3 @@ export const mockFactCheckReport: FactCheckReport = {
  *    - Export buttons functional
  *    - Navigation buttons work
  */
-

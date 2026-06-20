@@ -33,4 +33,3 @@ export const authController = {
     res.json({ status: 'success', data: user });
   }),
 };
-

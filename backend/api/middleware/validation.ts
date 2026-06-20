@@ -145,3 +145,4 @@ export const claimSchemas = {
       .default('json'),
   }),
 };
+

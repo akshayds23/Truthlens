@@ -123,3 +123,4 @@ This will take a few minutes as it downloads databases, Python, Node.js, and bui
 > **Important Note on the Free Tier**: TruthLens is a fairly heavy application because it uses a PostgreSQL database, a Node.js server, and a Python AI server. The `t2.micro` (1GB RAM) included in the free tier *might* freeze or crash during the build process because it runs out of memory. If the `docker compose up` command fails or freezes, you will likely need to stop the instance, change the instance type to `t3.small` (2GB RAM), and start it again (which costs about $15/month). 
 
 Let me know if you want to start this process! We can tackle Step 1 first.
+
