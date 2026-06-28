@@ -68,7 +68,7 @@ export default function Progress() {
   const { claimId } = useParams<{ claimId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const locationState = location.state as { claimText?: string } | null;
+  const locationState = location.state as { claimText?: string; apiKey?: string; llmProvider?: string; depth?: string } | null;
 
   const [error, setError] = useState<string | null>(null);
   const [activeStage, setActiveStage] = useState(0);   // index into PIPELINE_STAGES (0-based)
@@ -85,32 +85,73 @@ export default function Progress() {
   const stageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const errorTimeRef = useRef<number | null>(null);
 
-  // ── Advance pipeline stages based on cumulative elapsed time ──
+  // ── Stream-based processing and stage tracking ──
   useEffect(() => {
-    let stageIndex = 0;
-    let elapsed = 0;
+    if (!claimId) return;
+    let active = true;
+    let stageTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const advance = () => {
-      if (stageIndex >= PIPELINE_STAGES.length) return;
-      setActiveStage(stageIndex);
-      const stageDuration = PIPELINE_STAGES[stageIndex].durationMs;
-      elapsed += stageDuration;
-      stageTimerRef.current = setTimeout(() => {
-        const completedStage = stageIndex;
-        setCompletedStages((prev) => 
-          prev.includes(completedStage) ? prev : [...prev, completedStage]
-        );
-        stageIndex += 1;
-        advance();
-      }, stageDuration);
+    const startSimulation = (fromStageIndex = 0) => {
+      if (!active) return;
+      let stageIndex = fromStageIndex;
+
+      const advance = () => {
+        if (stageIndex >= PIPELINE_STAGES.length) return;
+        setActiveStage(stageIndex);
+        const stageDuration = PIPELINE_STAGES[stageIndex].durationMs;
+        stageTimer = setTimeout(() => {
+          const completedStage = stageIndex;
+          setCompletedStages((prev) =>
+            prev.includes(completedStage) ? prev : [...prev, completedStage]
+          );
+          stageIndex += 1;
+          advance();
+        }, stageDuration);
+      };
+
+      advance();
     };
 
-    advance();
+    // Start stream
+    claimsService.processClaimStream(
+      claimId,
+      {
+        apiKey: locationState?.apiKey,
+        depth: locationState?.depth,
+        llmProvider: locationState?.llmProvider,
+      },
+      (event) => {
+        if (!active) return;
+        if (event.stage !== undefined) {
+          const targetIndex = event.stage - 1;
+          setActiveStage(targetIndex);
+          setCompletedStages((prev) => {
+            const next = [...prev];
+            for (let i = 0; i < targetIndex; i++) {
+              if (!next.includes(i)) next.push(i);
+            }
+            return next;
+          });
+        }
+        if (event.status === 'completed') {
+          navigate(`/results/${claimId}`);
+        }
+        if (event.error) {
+          setError(event.error);
+        }
+      }
+    ).catch((err) => {
+      if (!active) return;
+      console.warn('Process stream finished or failed, using simulation/polling fallback:', err);
+      // Fallback: Start simulation from the current active stage
+      startSimulation(activeStage);
+    });
 
     return () => {
-      if (stageTimerRef.current) clearTimeout(stageTimerRef.current);
+      active = false;
+      if (stageTimer) clearTimeout(stageTimer);
     };
-  }, []);
+  }, [claimId, locationState, navigate]);
 
   // ── Stop timers if error occurs ──
   useEffect(() => {
@@ -166,7 +207,10 @@ export default function Progress() {
   // Compute overall progress %
   const totalDuration = PIPELINE_STAGES.reduce((s, p) => s + p.durationMs, 0);
   const elapsed = (errorTimeRef.current || Date.now()) - startTimeRef.current;
-  const progress = Math.min((elapsed / totalDuration) * 100, 98);
+  const stageProgress = (activeStage / PIPELINE_STAGES.length) * 100;
+  const progress = error
+    ? 100
+    : Math.max(stageProgress, Math.min((elapsed / totalDuration) * 100, 98));
 
   return (
     <div className="min-h-screen bg-gradient-mesh flex flex-col">

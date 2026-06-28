@@ -45,7 +45,14 @@ export default function LandingPage() {
     setIsSubmitting(true);
     try {
       const response = await claimsService.submitClaim(data as ClaimSubmissionForm);
-      navigate(`/progress/${response.claimId}`, { state: { claimText: data.text } });
+      navigate(`/progress/${response.claimId}`, {
+        state: {
+          claimText: data.text,
+          apiKey: data.apiKey,
+          llmProvider: data.llmProvider,
+          depth: data.depth,
+        },
+      });
     } catch (error) {
       alert(`Error: ${error instanceof Error ? error.message : 'Failed to submit claim'}`);
     } finally {

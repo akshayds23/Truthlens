@@ -2,7 +2,7 @@ import type { AuthResponse, Claim, FactCheckReport, ClaimSubmissionForm, User } 
 
 const isProd = import.meta.env.PROD;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (isProd ? `http://${window.location.hostname}:5000` : 'http://localhost:5000');
+  (isProd ? '' : 'http://localhost:5000');
 
 function normalizeClaim(raw: any): Claim {
   return {
@@ -152,6 +152,62 @@ export const claimsService = {
       }
     );
     return response;
+  },
+
+  processClaimStream: async (
+    claimId: string,
+    body: { apiKey?: string; depth?: string; llmProvider?: string },
+    onEvent: (event: { stage?: number; detail?: string; status?: string; error?: string }) => void
+  ) => {
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/claims/${claimId}/process`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: 'Process request failed' }));
+      throw new Error(err.error || `Process request failed: ${response.status}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('ReadableStream not supported in this browser');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+
+        if (trimmed.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(trimmed.slice(6));
+            onEvent(data);
+          } catch (e) {
+            console.error('Failed to parse SSE line', trimmed, e);
+          }
+        }
+      }
+    }
   },
 
 
