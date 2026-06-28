@@ -173,7 +173,7 @@ export function parseJsonResponse(content: string): any {
   }
 }
 
-export function resolveModelName(provider: string): string {
+export function resolveModelName(provider?: string): string {
   const defaults: Record<string, string> = {
     openai: 'gpt-4',
     gemini: 'gemini-2.0-flash',
@@ -181,5 +181,6 @@ export function resolveModelName(provider: string): string {
     groq: 'openai/gpt-oss-20b',
     local: 'openai/gpt-oss-20b',
   };
+  if (!provider) return defaults.groq;
   return defaults[provider.toLowerCase()] || provider;
 }

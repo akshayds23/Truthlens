@@ -143,10 +143,9 @@ async function processClaimAsync(claimId: string, data: any) {
       'ai-service-v2.0-nextjs'
     );
     await claimsStore.updateClaimStatus(claimId, 'completed');
-    logger.info('Claim processed successfully', { claimId });
-  } catch (error) {
+  } catch (error: any) {
     await claimsStore.updateClaimStatus(claimId, 'failed');
-    logger.error('Claim processing failed', { claimId, error });
+    logger.error('Claim processing failed', { claimId, error: error instanceof Error ? error.stack || error.message : error });
   }
 }
 

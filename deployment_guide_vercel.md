@@ -30,7 +30,7 @@ Make sure your repository has the following files at the root level:
 2. Import the Git repository containing your **TruthLens** monorepo.
 3. On the **Configure Project** screen:
    - **Project Name**: `truthlens` (or any custom name)
-   - **Framework Preset**: Vercel will automatically detect the root-level `vercel.json` and set the Framework Preset to **Services** (if not, select **Services**).
+   - **Framework Preset**: Select **Next.js** (Vercel will auto-detect this).
    - **Root Directory**: Leave it as the **Root of the repository** (do **not** select `frontend` or `backend`).
 
 ---
@@ -64,10 +64,11 @@ Scroll down to the **Environment Variables** section in the Vercel project confi
 
 ## 🔄 How Routing Works Under a Single Domain
 
-Because we are deploying under a single project, Vercel routes incoming requests as follows:
-- **`https://your-domain.vercel.app/api/*`** ➔ Routed to the Express.js Serverless function (`backend/api/app.ts`).
-- **`https://your-domain.vercel.app/*`** ➔ Routed to the static Vite frontend files.
+Because we are deploying as a single Next.js project, Vercel routes incoming requests natively:
+- **`https://your-domain.vercel.app/api/*`** ➔ Routed to Next.js API route handlers.
+- **`https://your-domain.vercel.app/*`** ➔ Routed to Next.js React pages.
 
 This means:
-1. **Zero CORS Issues**: The frontend and backend share the exact same domain, protocol, and port.
-2. **Simplified URLs**: The frontend uses relative paths (e.g. `/api/claims`) to call the backend, making it environment-agnostic.
+1. **Zero CORS Issues**: The frontend pages and backend API endpoints share the exact same domain.
+2. **Simplified URLs**: The client uses relative paths (e.g. `/api/claims`) to call the API, making it environment-agnostic.
+3. **Clean Reloads**: Direct page access (e.g. `/history`, `/results/[id]`) is natively handled by the Next.js router.
