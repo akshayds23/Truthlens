@@ -12,6 +12,16 @@ DROP TYPE IF EXISTS claim_depth CASCADE;
 DROP TYPE IF EXISTS claim_status CASCADE;
 DROP TYPE IF EXISTS llm_provider CASCADE;
 
+-- Drop tables if they exist
+DROP TABLE IF EXISTS audit_log CASCADE;
+DROP TABLE IF EXISTS feedback CASCADE;
+DROP TABLE IF EXISTS reports CASCADE;
+DROP TABLE IF EXISTS evidence_chunks CASCADE;
+DROP TABLE IF EXISTS sources CASCADE;
+DROP TABLE IF EXISTS sub_claims CASCADE;
+DROP TABLE IF EXISTS claims CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
 CREATE TYPE user_role AS ENUM ('user', 'admin', 'moderator');
 CREATE TYPE verdict_type AS ENUM ('TRUE', 'MOSTLY_TRUE', 'MISLEADING', 'FALSE', 'UNVERIFIABLE');
 CREATE TYPE claim_category AS ENUM ('health', 'politics', 'science', 'finance', 'other');

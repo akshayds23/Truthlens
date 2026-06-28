@@ -11,19 +11,26 @@ async function runMigrations() {
   try {
     console.log('🚀 Starting database migrations...');
     
-    // Read schema file
-    const schemaPath = join(__dirname, 'migrations', 'schema.sql');
+    // Read schema file (use neon version if database is on neon.tech)
+    const isNeon = (process.env.DATABASE_URL || '').includes('neon.tech');
+    const schemaFileName = isNeon ? 'schema-neon.sql' : 'schema.sql';
+    const schemaPath = join(__dirname, 'migrations', schemaFileName);
+    console.log(`Reading migration file: ${schemaFileName}`);
     const schema = readFileSync(schemaPath, 'utf-8');
     
     // Connect and run
     const client = await pool.connect();
     console.log('✅ Connected to database');
     
-    // Split by semicolon and run each statement
-    const statements = schema
+    // Strip SQL comments and split by semicolon
+    const cleanSchema = schema
+      .replace(/--.*$/gm, '') // Remove -- comments
+      .replace(/\/\*[\s\S]*?\*\//g, ''); // Remove /* */ comments
+
+    const statements = cleanSchema
       .split(';')
       .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+      .filter(s => s.length > 0);
     
     for (const statement of statements) {
       try {
