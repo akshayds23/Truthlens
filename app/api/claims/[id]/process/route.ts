@@ -4,6 +4,8 @@ import { logger } from '@/lib/logger';
 import { orchestrate } from '@/lib/ai/orchestrator';
 import { resolveModelName } from '@/lib/ai/llmClient';
 
+export const maxDuration = 60;
+
 function resolveApiKey(provider: string, apiKey?: string): string {
   if (apiKey?.trim()) return apiKey.trim();
   const map: Record<string, string | undefined> = {
