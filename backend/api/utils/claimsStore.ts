@@ -1,6 +1,6 @@
 import { query, queryOne } from './database';
 import { logger } from './logger';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export interface StoredClaim {
   id: string;
@@ -45,7 +45,7 @@ export const claimsStore = {
     llmProvider: string,
     jobId: string
   ): Promise<StoredClaim> {
-    const id = uuidv4();
+    const id = randomUUID();
     const now = new Date();
 
     logger.info('Creating claim with params', {
@@ -73,7 +73,7 @@ export const claimsStore = {
     let user = await queryOne('SELECT id FROM users WHERE email = $1', [email]);
     
     if (!user) {
-      const id = uuidv4();
+      const id = randomUUID();
       user = await queryOne(
         `INSERT INTO users (id, email, password, full_name, role) 
          VALUES ($1, $2, $3, $4, $5) RETURNING id`,
@@ -149,7 +149,7 @@ export const claimsStore = {
     fullReportJson: any,
     aiServiceVersion?: string
   ): Promise<StoredReport> {
-    const id = uuidv4();
+    const id = randomUUID();
     const now = new Date();
 
     const result = await queryOne(
@@ -169,7 +169,7 @@ export const claimsStore = {
     rating: number,
     comment?: string
   ): Promise<StoredFeedback> {
-    const id = uuidv4();
+    const id = randomUUID();
     const now = new Date();
 
     const result = await queryOne(

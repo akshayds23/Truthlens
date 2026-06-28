@@ -1,6 +1,6 @@
 import { query, queryOne } from './database';
 import { logger } from './logger';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export interface StoredUser {
   id: string;
@@ -17,7 +17,7 @@ export const userStore = {
     hashedPassword: string,
     fullName?: string
   ): Promise<StoredUser> {
-    const id = uuidv4();
+    const id = randomUUID();
     const now = new Date();
 
     const result = await queryOne(

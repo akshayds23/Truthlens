@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -6,10 +6,6 @@ import morgan from 'morgan';
 import { env } from './config/environment';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
-
-import authRoutes from './routes/auth.routes';
-import claimsRoutes from './routes/claims.routes';
-import providersRoutes from './routes/providers.routes';
 
 const app: Express = express();
 
@@ -95,10 +91,21 @@ app.get(['/', '/api'], (req: Request, res: Response) => {
   });
 });
 
+const lazyRoute =
+  (loadRouter: () => Promise<{ default: any }>) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const router = (await loadRouter()).default;
+      router(req, res, next);
+    } catch (error) {
+      next(error);
+    }
+  };
+
 // API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/claims', claimsRoutes);
-app.use('/api/providers', providersRoutes);
+app.use('/api/auth', lazyRoute(() => import('./routes/auth.routes')));
+app.use('/api/claims', lazyRoute(() => import('./routes/claims.routes')));
+app.use('/api/providers', lazyRoute(() => import('./routes/providers.routes')));
 
 // 404 handler
 app.use('*', (req: Request, res: Response) => {

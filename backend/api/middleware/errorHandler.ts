@@ -47,8 +47,8 @@ export const errorHandler = (
     path: req.path,
   };
 
-  if (process.env.NODE_ENV === 'development') {
-    response.details = error.message;
+  if (process.env.NODE_ENV === 'development' || process.env.VERCEL) {
+    response.details = error.message || String(error);
   }
 
   res.status(500).json(response);

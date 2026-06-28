@@ -1,7 +1,7 @@
 import { logger } from '../utils/logger';
 import { claimsStore } from '../utils/claimsStore';
 import { AppError } from '../utils/errors';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { env } from '../config/environment';
 import { orchestrate } from './ai/orchestrator';
 import { resolveModelName } from './ai/llmClient';
@@ -199,7 +199,7 @@ export const claimsService = {
     }
 
     // Generate job ID for async processing
-    const jobId = `job-${uuidv4()}`;
+    const jobId = `job-${randomUUID()}`;
 
     // Create claim in database
     const claim = await claimsStore.createClaim(
@@ -415,4 +415,3 @@ export const claimsService = {
     await claimsStore.updateClaimStatus(claimId, 'completed');
   },
 };
-
