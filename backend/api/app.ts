@@ -10,7 +10,6 @@ import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import claimsRoutes from './routes/claims.routes';
 import providersRoutes from './routes/providers.routes';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const app: Express = express();
 
@@ -51,16 +50,6 @@ const limiter = rateLimit({
 });
 
 app.use('/api/', limiter);
-
-// Proxy AI endpoints to internal FastAPI service
-app.use(
-  '/ai',
-  createProxyMiddleware({
-    target: env.AI_SERVICE_URL || 'http://localhost:8000',
-    changeOrigin: true,
-    pathRewrite: { '^/ai': '/api' },
-  })
-);
 
 // Health check endpoint (no rate limit)
 app.get('/health', (req: Request, res: Response) => {

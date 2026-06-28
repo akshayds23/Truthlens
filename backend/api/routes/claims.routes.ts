@@ -31,6 +31,9 @@ router.get(
 // Get a specific claim by ID
 router.get('/:id', claimsController.getClaim);
 
+// Process a claim with streaming updates
+router.post('/:id/process', claimsController.processClaim);
+
 // Delete a claim (soft delete)
 router.delete('/:id', claimsController.deleteClaim);
 

@@ -93,4 +93,39 @@ export const claimsController = {
       data: result,
     });
   }),
+
+  processClaim: asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { apiKey, depth, llmProvider } = req.body;
+
+    logger.info(`Starting process stream for claim ${id}`);
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+
+    const sendEvent = (data: any) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+      if ((res as any).flush) {
+        (res as any).flush();
+      }
+    };
+
+    try {
+      await claimsService.processClaimStream(
+        id,
+        { apiKey, depth, llmProvider },
+        (stage, detail) => {
+          sendEvent({ stage, detail });
+        }
+      );
+      sendEvent({ status: 'completed' });
+      res.end();
+    } catch (err: any) {
+      logger.error(`Error in process stream for ${id}:`, err);
+      sendEvent({ error: err.message || 'Processing failed' });
+      res.end();
+    }
+  }),
 };

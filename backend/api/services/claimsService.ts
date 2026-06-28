@@ -3,6 +3,8 @@ import { claimsStore } from '../utils/claimsStore';
 import { AppError } from '../utils/errors';
 import { v4 as uuidv4 } from 'uuid';
 import { env } from '../config/environment';
+import { orchestrate } from './ai/orchestrator';
+import { resolveModelName } from './ai/llmClient';
 
 export interface CreateClaimRequest {
   text: string;
@@ -122,21 +124,6 @@ const resolveApiKey = (provider: string, apiKey?: string): string => {
   return providerMap[provider] || '';
 };
 
-const waitForAIService = async (maxWaitMs = 90000): Promise<void> => {
-  const interval = 2000;
-  const start = Date.now();
-  while (Date.now() - start < maxWaitMs) {
-    try {
-      const r = await fetch(`${env.AI_SERVICE_URL}/health`, { signal: AbortSignal.timeout(3000) });
-      if (r.ok) return;
-    } catch {
-      // not ready yet
-    }
-    await new Promise(res => setTimeout(res, interval));
-  }
-  throw new Error('AI service did not become ready in time');
-};
-
 const processClaimAsync = async (
   claimId: string,
   data: CreateClaimRequest
@@ -144,30 +131,19 @@ const processClaimAsync = async (
   try {
     await claimsStore.updateClaimStatus(claimId, 'processing');
 
-    // Wait for FastAPI to be fully ready (model pre-loading can take ~10s on startup)
-    await waitForAIService();
-
     const apiKey = resolveApiKey(data.llmProvider, data.apiKey);
-    const response = await fetch(`${env.AI_SERVICE_URL}/api/orchestrate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text: data.text,
-        category: data.category,
-        depth: data.depth,
-        llmProvider: data.llmProvider,
-        apiKey,
-      }),
-    });
+    const model = resolveModelName(data.llmProvider);
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`AI service error ${response.status}: ${errorBody}`);
-    }
-
-    const reportJson = (await response.json()) as Record<string, any>;
+    // Call TypeScript orchestrator directly — no Python service needed
+    const reportJson = await orchestrate(
+      data.text,
+      claimId,
+      model,
+      apiKey,
+      env.GEMINI_API_KEY,
+      env.SERPER_API_KEY || undefined,
+      data.depth || 'standard',
+    );
 
     await claimsStore.createReport(
       claimId,
@@ -175,7 +151,7 @@ const processClaimAsync = async (
       typeof reportJson.confidence === 'number' ? reportJson.confidence : 0,
       reportJson.explanation || 'No explanation returned',
       reportJson,
-      'ai-service-v0.1.0'
+      'ai-service-v0.2.0-ts'
     );
 
     await claimsStore.updateClaimStatus(claimId, 'completed');
@@ -185,6 +161,7 @@ const processClaimAsync = async (
     logger.error('Claim processing failed', { claimId, error });
   }
 };
+
 
   const generateMarkdownReport = (report: any): string => {
   const lines = [
@@ -236,7 +213,12 @@ export const claimsService = {
 
     logger.info('Claim created successfully', { claimId: claim.id, jobId });
 
-    void processClaimAsync(claim.id, data);
+    const isVercel = process.env.VERCEL === '1';
+    if (!isVercel) {
+      void processClaimAsync(claim.id, data);
+    } else {
+      logger.info('Vercel environment detected; skipping background process queue. Client stream will handle execution.');
+    }
 
     return {
       claimId: claim.id,
@@ -369,6 +351,68 @@ export const claimsService = {
     }
 
     return await claimsStore.searchClaims(searchQuery);
+  },
+
+  async processClaimStream(
+    claimId: string,
+    data: { apiKey?: string; depth?: string; llmProvider?: string },
+    onProgress: (stage: number, detail: string) => void
+  ): Promise<void> {
+    const claim = await claimsStore.getClaimById(claimId);
+    if (!claim) {
+      throw new AppError(404, 'Claim not found');
+    }
+
+    if (claim.status === 'completed') {
+      onProgress(7, 'Complete');
+      return;
+    }
+
+    if (claim.status === 'processing') {
+      logger.info(`Claim ${claimId} is already processing. Stream request will wait for completion.`);
+      onProgress(1, 'Connecting to existing research pipeline...');
+      
+      while (true) {
+        const currentClaim = await claimsStore.getClaimById(claimId);
+        if (!currentClaim || currentClaim.status === 'completed' || currentClaim.status === 'failed') {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+      return;
+    }
+
+    await claimsStore.updateClaimStatus(claimId, 'processing');
+
+    const provider = data.llmProvider || claim.llm_provider;
+    const apiKey = resolveApiKey(provider, data.apiKey);
+    const model = resolveModelName(provider);
+
+    const reportJson = await orchestrate(
+      claim.text,
+      claimId,
+      model,
+      apiKey,
+      env.GEMINI_API_KEY,
+      env.SERPER_API_KEY || undefined,
+      data.depth || claim.depth || 'standard',
+      onProgress
+    );
+
+    if (reportJson.error) {
+      throw new Error(reportJson.error);
+    }
+
+    await claimsStore.createReport(
+      claimId,
+      reportJson.verdict || 'UNVERIFIABLE',
+      typeof reportJson.confidence === 'number' ? reportJson.confidence : 0,
+      reportJson.explanation || 'No explanation returned',
+      reportJson,
+      'ai-service-v0.2.0-ts'
+    );
+
+    await claimsStore.updateClaimStatus(claimId, 'completed');
   },
 };
 

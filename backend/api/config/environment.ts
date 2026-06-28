@@ -15,6 +15,8 @@ interface Environment {
   RATE_LIMIT_MAX_REQUESTS: number;
   AI_SERVICE_URL: string;
   API_VERSION: string;
+  GEMINI_API_KEY: string;
+  SERPER_API_KEY: string;
 }
 
 const getEnvironment = (): Environment => {
@@ -51,6 +53,8 @@ const getEnvironment = (): Environment => {
     ),
     AI_SERVICE_URL: process.env.AI_SERVICE_URL || 'http://localhost:8000',
     API_VERSION: process.env.API_VERSION || 'v1',
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '',
+    SERPER_API_KEY: process.env.SERPER_API_KEY || '',
   };
 
   return env;
