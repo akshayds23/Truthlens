@@ -52,6 +52,19 @@ function normalizeReport(raw: any): FactCheckReport {
   };
 }
 
+async function readErrorMessage(response: Response): Promise<string> {
+  const contentType = response.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    const error = await response.json().catch(() => null);
+    return error?.error || error?.message || `API error: ${response.status}`;
+  }
+
+  const text = await response.text().catch(() => '');
+  const message = text.trim() || response.statusText || 'Request failed';
+  return `API error ${response.status}: ${message}`;
+}
+
 // Utility function to make requests
 async function apiRequest<T>(
   endpoint: string,
@@ -79,8 +92,7 @@ async function apiRequest<T>(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    const error = await response.json();
-    throw new Error(error.error || `API error: ${response.status}`);
+    throw new Error(await readErrorMessage(response));
   }
 
   return response.json();
@@ -192,8 +204,7 @@ export const claimsService = {
     });
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: 'Process request failed' }));
-      throw new Error(err.error || `Process request failed: ${response.status}`);
+      throw new Error(await readErrorMessage(response));
     }
 
     const reader = response.body?.getReader();
@@ -297,7 +308,7 @@ export const claimsService = {
         throw new Error(error.error || `API error: ${response.status}`);
       }
 
-      throw new Error(`Export failed with status ${response.status}`);
+      throw new Error(await readErrorMessage(response));
     }
 
     if (format === 'markdown') {

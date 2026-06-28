@@ -8,6 +8,11 @@ import { claimsStore } from '../utils/claimsStore';
 export const claimsController = {
   createClaim: asyncHandler(async (req: Request, res: Response) => {
     logger.info('Create claim endpoint called');
+
+    if (process.env.VERCEL && !process.env.DATABASE_URL) {
+      throw new AppError(500, 'DATABASE_URL is not configured for this deployment');
+    }
+
     let userId = (req as any).user?.id;
     if (!userId) {
       userId = await claimsStore.getAnonymousUser();
