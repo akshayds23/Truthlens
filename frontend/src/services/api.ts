@@ -1,8 +1,7 @@
 import type { AuthResponse, Claim, FactCheckReport, ClaimSubmissionForm, User } from '../types';
 
 const isProd = import.meta.env.PROD;
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (isProd ? '' : 'http://localhost:5000');
+const API_BASE_URL = isProd ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
 
 function normalizeClaim(raw: any): Claim {
   return {
