@@ -1,7 +1,26 @@
 import type { AuthResponse, Claim, FactCheckReport, ClaimSubmissionForm, User } from '../types';
 
-const isProd = import.meta.env.PROD;
-const API_BASE_URL = isProd ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
+const isLocalHost =
+  typeof window !== 'undefined' &&
+  ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+function getConfiguredApiHostname(baseUrl: string) {
+  try {
+    return baseUrl ? new URL(baseUrl).hostname : '';
+  } catch (_error) {
+    return '';
+  }
+}
+
+const configuredApiHostname = getConfiguredApiHostname(configuredApiBaseUrl);
+const isLocalConfiguredApi = ['localhost', '127.0.0.1', '::1'].includes(configuredApiHostname);
+const API_BASE_URL =
+  configuredApiBaseUrl && (isLocalHost || !isLocalConfiguredApi)
+    ? configuredApiBaseUrl
+    : isLocalHost
+      ? 'http://localhost:5000'
+      : '';
 
 function normalizeClaim(raw: any): Claim {
   return {
@@ -335,5 +354,4 @@ export const providersService = {
     );
   },
 };
-
 

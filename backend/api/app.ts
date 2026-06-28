@@ -19,10 +19,40 @@ app.set('trust proxy', 1);
 // Security middleware
 app.use(helmet());
 
+const configuredOrigins = env.CORS_ORIGIN.split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const allowedOrigins = new Set([
+  ...configuredOrigins,
+  'http://localhost:3000',
+  'http://localhost:5173',
+]);
+
+const isAllowedOrigin = (origin: string) => {
+  if (allowedOrigins.has(origin)) {
+    return true;
+  }
+
+  try {
+    const hostname = new URL(origin).hostname;
+    return hostname === 'vercel.app' || hostname.endsWith('.vercel.app');
+  } catch (_error) {
+    return false;
+  }
+};
+
 // CORS middleware
 app.use(
   cors({
-    origin: env.CORS_ORIGIN,
+    origin(origin, callback) {
+      if (!origin || isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
     credentials: true,
   })
 );
