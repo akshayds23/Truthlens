@@ -51,13 +51,13 @@ const limiter = rateLimit({
 
 app.use('/api/', limiter);
 
-// Health check endpoint (no rate limit)
-app.get('/health', (req: Request, res: Response) => {
+// Health check endpoints (no rate limit)
+app.get(['/health', '/api/health'], (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Root endpoint (no rate limit)
-app.get('/', (req: Request, res: Response) => {
+// Root endpoints (no rate limit)
+app.get(['/', '/api'], (req: Request, res: Response) => {
   res.json({
     message: 'TruthLens API Gateway v0.1.0',
     version: env.API_VERSION,
