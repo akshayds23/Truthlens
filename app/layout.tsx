@@ -3,9 +3,23 @@ import './globals.css';
 import { AppProvider } from '../store/appContext';
 import Navigation from '../components/Navigation';
 
+const title = 'TruthLens: AI Fact-Checking & Evidence Research';
+const description = 'Verify claims autonomously using AI and live research across multiple trusted web sources.';
+
 export const metadata: Metadata = {
-  title: 'TruthLens — Smart Autonomous Fact-Checking & Evidence Research',
-  description: 'Verify claims autonomously using AI and live research across multiple trusted web sources.',
+  metadataBase: new URL('https://truthlens-zeta-lemon.vercel.app'),
+  title,
+  description,
+  // Link previews on LinkedIn, Slack, X and others
+  openGraph: {
+    title,
+    description,
+    url: '/',
+    siteName: 'TruthLens',
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'TruthLens fact-checking dashboard' }],
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image', title, description, images: ['/og.png'] },
 };
 
 export default function RootLayout({
